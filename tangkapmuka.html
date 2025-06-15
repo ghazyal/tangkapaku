@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tangkap Wajahku!</title>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(#ffe6ec, #ffc3d3);
+      font-family: 'Comic Sans MS', cursive;
+      overflow: hidden;
+      height: 100vh;
+      position: relative;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #player {
+      width: 80px;
+      height: 80px;
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff69b4;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #fff;
+      transition: left 0.1s;
+    }
+
+    .falling-face {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      animation: fall 3s linear forwards;
+    }
+
+    @keyframes fall {
+      0% { top: -60px; }
+      100% { top: 100vh; }
+    }
+
+    #scoreBoard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #message {
+      position: absolute;
+      bottom: 130px;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      color: #fff;
+      text-shadow: 1px 1px 4px #000;
+    }
+
+    #touchControls {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 10;
+    }
+
+    #touchControls button {
+      font-size: 32px;
+      margin: 0 30px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      background-color: #ff69b4;
+      color: white;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    audio{
+        display: none;
+    }
+    @media (min-width: 768px) {
+      #touchControls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+    <audio id="bgmusic" src="bgmusic.mp3" autoplay loop></audio>
+  <div id="gameArea">
+    <div id="player"></div>
+    <div id="scoreBoard">❤️ Skor: 0</div>
+    <div id="message"></div>
+    <div id="touchControls">
+      <button onclick="moveLeft()">⬅️</button>
+      <button onclick="moveRight()">➡️</button>
+    </div>
+  </div>
+
+  <script>
+    const player = document.getElementById("player");
+    const gameArea = document.getElementById("gameArea");
+    const scoreBoard = document.getElementById("scoreBoard");
+    const message = document.getElementById("message");
+
+    let score = 0;
+    let playerX = window.innerWidth / 2 - 40;
+
+    // Keyboard kontrol
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") moveLeft();
+      else if (e.key === "ArrowRight") moveRight();
+    });
+
+    function moveLeft() {
+      playerX -= 40;
+      playerX = Math.max(0, playerX);
+      player.style.left = playerX + "px";
+    }
+
+    function moveRight() {
+      playerX += 40;
+      playerX = Math.min(window.innerWidth - 80, playerX);
+      player.style.left = playerX + "px";
+    }
+
+    function createFace() {
+      const face = document.createElement("img");
+      face.src = "wajahku.png"; // ganti dengan gambar wajahmu
+      face.classList.add("falling-face");
+      face.style.left = Math.random() * (window.innerWidth - 60) + "px";
+      gameArea.appendChild(face);
+
+      const interval = setInterval(() => {
+        const faceRect = face.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+
+        if (
+          faceRect.bottom >= playerRect.top &&
+          faceRect.left < playerRect.right &&
+          faceRect.right > playerRect.left
+        ) {
+          // Ketangkap
+          score++;
+          scoreBoard.innerText = `❤️ Skor: ${score}`;
+          message.innerText = randomMessage();
+          face.remove();
+          clearInterval(interval);
+        }
+
+        if (faceRect.top > window.innerHeight) {
+          face.remove();
+          message.innerText = "Yahh... ayaang lepasin muka aku 😢";
+          clearInterval(interval);
+        }
+      }, 50);
+    }
+
+    function randomMessage() {
+      const messages = [
+        "Cieee dapet muka akuu 😜",
+        "Hihii peluk aku dong 🤭",
+        "Cintaku ketangkep ❤️",
+        "Ayang jago banget 😍",
+        "Muka aku jatuh ke pelukan ayaang 🥰",
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    // Tampilkan tutorial swal dulu
+    Swal.fire({
+      title: 'Cara Main 🕹️',
+      html: `
+        <p>🎯 Gerakkin lingkaran pink ke kiri & kanan.</p>
+        <p>🫶 Tangkap gambar muka aku yang jatuh dari atas!</p>
+        <p>📱 Di HP: Pencet tombol ⬅️ ➡️ di bawah layar<br/>
+           💻 Di Laptop: Pake tombol panah ← dan →</p>
+        <br/>
+        <strong>Siap main, yaang? 😚</strong>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Mulai sekarang! 💖',
+      confirmButtonColor: '#ff69b4',
+      backdrop: `
+        rgba(0,0,0,0.4)
+        url("https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif")
+        left top
+        no-repeat
+      `
+    }).then(() => {
+      setInterval(createFace, 1000);
+    });
+  </script>
+</body>
+</html>
